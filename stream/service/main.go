@@ -17,6 +17,17 @@ type customerService struct {
     m         sync.Mutex
 }
 
+
+func remove(persons []*pb.Person, person *pb.Person) []*pb.Person {
+    result := []*pb.Person{}
+    for _, v := range persons {
+        if v.Name != person.Name {
+            result = append(result, v)
+        }
+    }
+    return result
+}
+
 func (cs *customerService) ListPerson(p *pb.RequestType, stream pb.CustomerService_ListPersonServer) error {
     cs.m.Lock()
     defer cs.m.Unlock()
@@ -24,6 +35,7 @@ func (cs *customerService) ListPerson(p *pb.RequestType, stream pb.CustomerServi
         if err := stream.Send(p); err != nil {
             return err
         }
+        cs.customers = remove(cs.customers, p)
     }
     return nil
 }
